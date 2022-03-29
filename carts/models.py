@@ -11,10 +11,3 @@ class Cart(TimestampZone):
 
     class Meta: 
         db_table = 'carts'
-
-
-
-
-
-
-    
