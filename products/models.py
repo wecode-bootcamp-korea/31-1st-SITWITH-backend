@@ -10,8 +10,8 @@ class Category(TimestampZone):
 
 class Product(TimestampZone): 
     name     = models.CharField(max_length=45)
-    price    = models.DecimalField(max_digits=None)
-    colors   = models.ManyToManyField('Color', 'self', through='productcolors', related_name='productcolors')
+    price    = models.DecimalField(max_digits=8,decimal_places=0)
+    colors   = models.ManyToManyField('Color', through='productcolor')
     category = models.ForeignKey('Category', on_delete = models.CASCADE)
 
     class Meta: 
