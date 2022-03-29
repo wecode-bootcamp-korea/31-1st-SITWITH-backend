@@ -1,4 +1,5 @@
-from django.db import models
+from django.db    import models
+
 from cores.models import TimestampZone
 
 class Category(TimestampZone): 
@@ -10,7 +11,7 @@ class Category(TimestampZone):
 class Product(TimestampZone): 
     name     = models.CharField(max_length=45)
     price    = models.DecimalField(max_digits=None)
-    color    = models.ManyToManyField('Color', 'self',on_delete=models.CASCADE, through='productcolor', related_name='productcolor')
+    colors   = models.ManyToManyField('Color', 'self', through='productcolors', related_name='productcolors')
     category = models.ForeignKey('Category', on_delete = models.CASCADE)
 
     class Meta: 
@@ -24,7 +25,7 @@ class Color(TimestampZone):
 
 class Image(TimestampZone): 
     product   = models.ForeignKey('Product', on_delete=models.CASCADE)
-    image_url = models.CharField(max_length=45)
+    image_url = models.CharField(max_length=3000)
     sequence  = models.IntegerField()
 
     class Meta: 
@@ -35,4 +36,4 @@ class ProductColor(TimestampZone):
     color   = models.ForeignKey('Color', on_delete=models.CASCADE)
 
     class Meta: 
-        db_table = 'productcolor'
+        db_table = 'productcolors'
