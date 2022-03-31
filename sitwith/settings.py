@@ -16,6 +16,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+ALGORITHM = ALGORITHM
 
 # Application definition
 
