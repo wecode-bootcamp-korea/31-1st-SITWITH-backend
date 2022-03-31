@@ -1,6 +1,7 @@
 
 from pathlib import Path
 from my_settings import DATABASES, SECRET_KEY, ALGORITHM
+
 import pymysql
     
 pymysql.install_as_MySQLdb()
@@ -16,6 +17,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+ALGORITHM = ALGORITHM
 
 # Application definition
 

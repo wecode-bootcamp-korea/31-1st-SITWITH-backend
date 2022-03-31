@@ -5,7 +5,7 @@ from cores.models import TimestampZone
 class Cart(TimestampZone): 
     user     = models.ForeignKey('users.user', on_delete=models.CASCADE)
     product  = models.ForeignKey('products.product', on_delete=models.CASCADE)
-    quantity = models.IntegerField()
+    quantity = models.IntegerField(default=0)
 
     def total_price(self): 
         return self.quantity * self.product.price
