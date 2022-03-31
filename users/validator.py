@@ -15,8 +15,5 @@ def validate_password(password):
         raise ValidationError("Invalid password")
     
 def validate_email(email):
-    if email == "":
-        pass
-    else:
-        if not re.match(REGEX_EMAIL, email):
-            raise ValidationError("Invalid email")
+    if not re.match(REGEX_EMAIL, email):
+        raise ValidationError("Invalid email")
