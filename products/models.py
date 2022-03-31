@@ -27,7 +27,7 @@ class Image(TimestampZone):
     product   = models.ForeignKey('Product', on_delete=models.CASCADE)
     image_url = models.CharField(max_length=3000)
     sequence  = models.IntegerField()
-    color = models.ForeignKey('Color', on_delete=models.CASCADE)
+    color     = models.ForeignKey('Color', on_delete=models.CASCADE)
     
     class Meta: 
         db_table = 'images'
