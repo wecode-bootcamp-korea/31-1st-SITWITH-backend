@@ -1,7 +1,7 @@
 import os, django, csv, sys
 
 sys.path.append(os.getcwd())
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "practice.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sitwith.settings")
 django.setup()
 
 from products.models import *
