@@ -19,9 +19,9 @@ def login_authorization(func):
             return func(self, request, *args, **kwargs)
         
         except jwt.exceptions.DecodeError:
-            return JsonResponse({'Message' : 'Invalid token'}, status=400)
+            return JsonResponse({'message' : 'Invalid token'}, status=400)
         except User.DoesNotExist:
-            return JsonResponse({'Message' : 'Invalid user'}, status=400)
+            return JsonResponse({'message' : 'Invalid user'}, status=400)
         
     
     return wrapper

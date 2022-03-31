@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import json, bcrypt, jwt
 
 from django.forms import ValidationError
@@ -6,7 +7,7 @@ from django.views import View
 from django.conf  import settings
 
 from users.models       import User
-from users.validator    import username_validate, password_validate, email_validate
+from users.validator    import validate_username, validate_password, validate_email
 
 class SignUpView(View):
     def post(self, request):
@@ -16,15 +17,17 @@ class SignUpView(View):
             input_password = data['password']
             input_email    = data['email']
             
-            username_validate(input_username)
-            password_validate(input_password)
-            email_validate(input_email)
+            validate_username(input_username)
+            validate_password(input_password)
+            validate_email(input_email)
             
             if User.objects.filter(username = input_username).exists():
-                return JsonResponse({'message' : 'Username already exists'}, status=401)
+                return JsonResponse({'message' : 'Username already exists'}, status=409)
             
-            if User.objects.filter(email = input_email).exists():
-                return JsonResponse({'message' : 'Email already exists'}, status=401)
+            if input_email == "" :
+                pass
+            elif User.objects.filter(email = input_email).exists():
+                return JsonResponse({'message' : 'Email already exists'}, status=409)
 
             hashed_password = bcrypt.hashpw(input_password.encode('utf-8'),bcrypt.gensalt()).decode('utf-8')
 
@@ -51,7 +54,7 @@ class SignInView(View):
             if not bcrypt.checkpw(input_password.encode('utf-8'), user.password.encode('utf-8')):
                 return JsonResponse({'message' : 'Password does not match'}, status=401)
             
-            access_token = jwt.encode({'id':user.id}, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+            access_token = jwt.encode({'id':user.id, 'exp':datetime.utcnow()+timedelta(days=3)}, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
             return JsonResponse({'token' : access_token}, status=200)
             
         except User.DoesNotExist:
