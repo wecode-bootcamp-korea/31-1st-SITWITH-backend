@@ -21,10 +21,10 @@ class SignUpView(View):
             email_validate(input_email)
             
             if User.objects.filter(username = input_username).exists():
-                return JsonResponse({'Message' : 'Username already exists'}, status=401)
+                return JsonResponse({'message' : 'Username already exists'}, status=401)
             
             if User.objects.filter(email = input_email).exists():
-                return JsonResponse({'Message' : 'Email already exists'}, status=401)
+                return JsonResponse({'message' : 'Email already exists'}, status=401)
 
             hashed_password = bcrypt.hashpw(input_password.encode('utf-8'),bcrypt.gensalt()).decode('utf-8')
 
@@ -34,11 +34,11 @@ class SignUpView(View):
                 email    = input_email,
             )
             
-            return JsonResponse({'Message' : 'Success'}, status=201)
+            return JsonResponse({'message' : 'Success'}, status=201)
         except KeyError:
-            return JsonResponse({'Message' : 'Key error'}, status=400)
+            return JsonResponse({'message' : 'Key error'}, status=400)
         except ValidationError as e:
-            return JsonResponse({'Message' : e.message}, status=400)
+            return JsonResponse({'message' : e.message}, status=400)
 
 class SignInView(View):
     def post(self, request):
@@ -49,13 +49,13 @@ class SignInView(View):
             user           = User.objects.get(username = input_username)
             
             if not bcrypt.checkpw(input_password.encode('utf-8'), user.password.encode('utf-8')):
-                return JsonResponse({'Message': 'Password does not match'}, status=401)
+                return JsonResponse({'message': 'Password does not match'}, status=401)
             
             access_token = jwt.encode({'id':user.id}, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-            return JsonResponse({'Token' : access_token}, status=200)
+            return JsonResponse({'token' : access_token}, status=200)
             
         except User.DoesNotExist:
-            return JsonResponse({'Message': 'User does not exist'}, status=401)
+            return JsonResponse({'message': 'User does not exist'}, status=401)
         
         except KeyError:
-            return JsonResponse({'Message' : 'Key error'}, status=400)
+            return JsonResponse({'message' : 'Key error'}, status=400)
