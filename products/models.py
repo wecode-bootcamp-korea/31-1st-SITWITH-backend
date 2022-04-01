@@ -4,7 +4,7 @@ from cores.models import TimestampZone
 
 class Category(TimestampZone): 
     name = models.CharField(max_length=45)
-
+    
     class Meta: 
         db_table = 'categories'
 
@@ -13,13 +13,13 @@ class Product(TimestampZone):
     price    = models.DecimalField(max_digits=8,decimal_places=2)
     colors   = models.ManyToManyField('Color', through='productcolor')
     category = models.ForeignKey('Category', on_delete = models.CASCADE)
-
+    
     class Meta: 
         db_table = 'products'
 
 class Color(TimestampZone): 
     name = models.CharField(max_length=45)
-
+    
     class Meta: 
         db_table = 'colors'
 
