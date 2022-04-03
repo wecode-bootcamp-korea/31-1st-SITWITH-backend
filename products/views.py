@@ -1,62 +1,59 @@
-
+from django.db.models       import Q
 from django.http            import JsonResponse
 from django.views           import View
 
-from .models import Product, Color, Image, ProductColor
-
+from products.models import Image, ProductColor
 
 class ProductListView(View): 
     def get(self, request): 
-        category = request.GET.get('category', "all")
-        res = []
-        if category != 'all':
-           product_data = Product.objects.filter(category_id=category)
-        else: 
-            product_data = Product.objects.all()
-
-        if not product_data: 
-            return JsonResponse({"message":"Category does not exist"}, status = 400)
-     
-        for product in product_data: 
-            productcolor_data = ProductColor.objects.filter(product_id = product.id)
-            result = []
-            for productcolor in productcolor_data: 
-                res.append({
-                    "name" : product.name,
-                    "price": product.price,
-                    "color": productcolor.color.name,
-                    "main_image": [image.image_url for image in Image.objects.filter(product_color_id = productcolor.id)][0]
-                })
-            result.append({
-                "category_id" : category,
-                "product_info": res
-            })
+        category = request.GET.getlist('category', None)
+        color= request.GET.getlist('color',None)
+        product = request.GET.get('product',None)
+        price_upper_range  = request.GET.get('priceupper',100000000)
+        price_lower_range  = request.GET.get('pricelower',0)
+        result=[]
         
-        return JsonResponse({"message":"Success", "result":result}, status = 200)
-    
+        q = Q()
+
+        if category:
+            q &= Q(product__category_id__in = category)
+
+        if product:
+            q &= Q(product__name__istartswith = product)
+                       
+        if color :
+            q &= Q(color__name__in = (color))
+
+        q &= Q (product__price__range = (price_lower_range, price_upper_range))
+
+        products = ProductColor.objects.filter(q) 
+
+        result=[{
+            "primary_key" : pc.id,
+            "category" : pc.product.category.name,
+            "name" :  pc.product.name,
+            "color" : pc.color.name,
+            "price" : pc.product.price,
+            "image" : [image.image_url for image in Image.objects.filter(product_color_id = pc.id, sequence=1)]       
+        }for pc in products]
+            
+
+        return JsonResponse({"result":result}, status=200)    
+
 class DetailView(View): 
     def get(self, request, product_id): 
         color = request.GET.get('color', None)
-        product_data = Product.objects.filter(id=product_id)
+        product_data = ProductColor.objects.filter(product_id=product_id)
 
-        if not product_data: 
-            return JsonResponse({"message":"Product does not exist"}, status = 400)
-        
-        for product in product_data:
-            if color == None:  
-                color_data = ProductColor.objects.filter(product_id = product.id)
+        if color != None:
+            product_data = ProductColor.objects.filter(product_id=product_id, color_id=color)
+ 
+        result=[{
+            "name"      : product.product.name,
+            "price"     : product.product.price,
+            "color"     : product.color.name,
+            "image_list": [image.image_url for image in Image.objects.filter(product_color_id = product.color.id)]
+        }for product in product_data]
 
-            else: 
-                color   = int(Color.objects.get(id = color).id)
-                color_data = ProductColor.objects.filter(product_id = product.id, color_id = color)   
-
-            if not color_data:
-                return JsonResponse({"message":"Color does not exist"}, status = 400)
-            result = [{
-                "name"      : data.product.name,
-                "price"     : product.price,
-                "color"     : data.color.name,
-                "image_list": [image.image_url for image in Image.objects.filter(product_color_id = data.id)]
-            }for data in color_data]
-
-        return JsonResponse({"message":"Success", "result" : result}, status=200)
+            
+        return JsonResponse({"result" : result}, status=200)
