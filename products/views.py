@@ -12,7 +12,7 @@ class ProductListView(View):
         max_price  = request.GET.get('max_price',100000000)
         min_price  = request.GET.get('min_price',0)
         offset      = int(request.GET.get('offset', 0))
-        limit       = int(request.GET.get('limit', 50))
+        limit       = int(request.GET.get('limit', 16))
 
         q = Q()
 
@@ -28,7 +28,7 @@ class ProductListView(View):
         q &= Q (product__price__range = (min_price, max_price))
         
         products = ProductColor.objects.filter(q)[offset:limit]
-        
+
         result=[{ 
             "category" : Category.objects.get(id=product.product.category_id).name,
             "name" : product.product.name,
