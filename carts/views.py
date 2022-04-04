@@ -99,13 +99,17 @@ class CartView(View):
 
     @login_authorization
     def delete(self, request):
-        user = request.user
-        cart_id_list = request.GET.getlist('id')
+        try:
+            user = request.user
+            cart_id_list = request.GET.getlist('id')
 
-        if not cart_id_list:
+            if not cart_id_list:
+                return JsonResponse({'message' : 'Cart does not exist'}, status=400)
+
+            for cart_id in cart_id_list:
+                cart = Cart.objects.get(user = user, id = cart_id)
+                cart.delete()
+            return JsonResponse({'message' : 'Cart deleted'}, status=200)
+        except Cart.DoesNotExist:
             return JsonResponse({'message' : 'Cart does not exist'}, status=400)
-
-        for cart_id in cart_id_list:
-            cart = Cart.objects.get(user = user, id = cart_id)
-            cart.delete()
-        return JsonResponse({'message' : 'Cart deleted'}, status=200)
+    
