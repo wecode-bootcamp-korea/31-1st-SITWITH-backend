@@ -2,22 +2,23 @@ from django.db.models       import Q
 from django.http            import JsonResponse
 from django.views           import View
 
-from products.models import Image, ProductColor, Color, Product
+from products.models import *
 
 class ProductListView(View): 
     def get(self, request): 
-        categories = request.GET.getlist('category', None)
+        categories=   request.GET.getlist('category', None)
         colors     = request.GET.getlist('color',None)
         product    = request.GET.get('product',None)
         max_price  = request.GET.get('max_price',100000000)
         min_price  = request.GET.get('min_price',0)
-        result  =[]
-    
+        offset      = int(request.GET.get('offset', 0))
+        limit       = int(request.GET.get('limit', 50))
+
         q = Q()
 
         if categories:
             q &= Q(product__category_id__in = categories)
-
+        print(q)
         if product:
             q &= Q(product__name__icontains = product)
                        
@@ -25,21 +26,21 @@ class ProductListView(View):
             q &= Q(color__name__in = colors)
 
         q &= Q (product__price__range = (min_price, max_price))
-
-        products = ProductColor.objects.filter(q)
-
-        for product in products:
-
-            result.append({
-                "primary_key": product.id,
-                "category"   : product.product.category.name,
-                "name"       : (product.product.name)+"_"+(product.color.name),
-                "color"      : product.color.name,
-                "price"      : product.product.price,
-                "image"      : [image.image_url for image in Image.objects.filter(product_color_id = product.id, sequence=1)]
-            })
-     
-        return JsonResponse({"result":result}, status=200)    
+        
+        products = ProductColor.objects.filter(q)[offset:limit]
+        
+        result=[{ 
+            "category" : Category.objects.get(id=product.product.category_id).name,
+            "name" : product.product.name,
+            "price" : product.product.price,
+            "colors" : [{
+                    "id" : color.id,
+                    "color" : color.color.name,
+                    "image" : [image.image_url for image in Image.objects.filter(product_color_id=color.id, sequence=1)][0]
+                }for color in ProductColor.objects.filter(product_id = product.id)]
+        }for product in products]
+    
+        return JsonResponse({"result":result}, status=200)
 
 class DetailView(View): 
     def get(self, request, product_id): 
