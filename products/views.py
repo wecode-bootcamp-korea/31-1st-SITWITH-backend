@@ -2,7 +2,7 @@ from django.db.models       import Q
 from django.http            import JsonResponse
 from django.views           import View
 
-from products.models import Image, ProductColor
+from products.models import Image, ProductColor, Color, Product
 
 class ProductListView(View): 
     def get(self, request): 
@@ -11,8 +11,8 @@ class ProductListView(View):
         product    = request.GET.get('product',None)
         max_price  = request.GET.get('max_price',100000000)
         min_price  = request.GET.get('min_price',0)
-        res        = []
-        
+        result  =[]
+    
         q = Q()
 
         if categories:
@@ -27,26 +27,23 @@ class ProductListView(View):
         q &= Q (product__price__range = (min_price, max_price))
 
         products = ProductColor.objects.filter(q)
-     
+
         for product in products:
 
-            res.append({
+            result.append({
                 "primary_key": product.id,
+                "category"   : product.product.category.name,
+                "name"       : (product.product.name)+"_"+(product.color.name),
                 "color"      : product.color.name,
                 "price"      : product.product.price,
                 "image"      : [image.image_url for image in Image.objects.filter(product_color_id = product.id, sequence=1)]
             })
-
-        result=[{
-                "category"   : product.product.category.name,
-                "name"       : product.product.name,
-                "result"     : res
-            }]
      
         return JsonResponse({"result":result}, status=200)    
 
 class DetailView(View): 
     def get(self, request, product_id): 
+        
         color = request.GET.get('color', None)
         product_data = ProductColor.objects.filter(product_id=product_id)
         res=[]
@@ -60,7 +57,6 @@ class DetailView(View):
                 "color"     : product.color.name,
                 "image_list": [image.image_url for image in Image.objects.filter(product_color_id = product.color.id)]
             })
-
         result=[{
             "name"      : product.product.name,
             "price"     : product.product.price,
