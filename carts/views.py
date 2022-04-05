@@ -5,7 +5,7 @@ from django.views import View
 from django.forms import ValidationError
 
 from carts.models    import Cart
-from carts.validator import validate_quantity
+from carts.validator import validate_zero_quantity, validate_total_quantity
 from products.models import ProductColor, Image
 from cores.decorator import login_authorization
 
@@ -21,7 +21,7 @@ class CartView(View):
             product_color    = ProductColor.objects.get(product_id = product_id, color_id = color_id)
             inventory        = product_color.inventory
             
-            validate_quantity(quantity, inventory)
+            validate_zero_quantity(quantity)
             
             cart, is_created  = Cart.objects.get_or_create(
                 user          = user,
@@ -29,6 +29,9 @@ class CartView(View):
                 defaults      = {'quantity' : 0}
             )
             cart.quantity += quantity
+            
+            validate_total_quantity(cart.quantity, inventory)
+            
             cart.save()
             
             if is_created:
@@ -77,9 +80,12 @@ class CartView(View):
             if not cart_id:
                 return JsonResponse({'message' : 'Url path is wrong'}, status=400)
 
-            validate_quantity(quantity, inventory)
+            validate_zero_quantity(quantity)
             
             cart.quantity = quantity
+            
+            validate_total_quantity(cart.quantity, inventory)
+            
             cart.save()
 
             return JsonResponse({'quantity': cart.quantity}, status=200)
