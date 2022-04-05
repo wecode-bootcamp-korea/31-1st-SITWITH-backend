@@ -54,6 +54,7 @@ class CartView(View):
 
         result = [{
             'cart_id'      : cart.id,
+            'category_name': cart.product_color.product.category.name,
             'quantity'     : cart.quantity,
             'product_name' : cart.product_color.product.name,
             'product_price': cart.product_color.product.price,
@@ -87,7 +88,7 @@ class CartView(View):
             cart          = Cart.objects.get(user = user, id = cart_id)
             cart.quantity = quantity
             cart.save()
-            
+
             return JsonResponse({
                 'message' : 'Quantity changed',
                 'quantity': cart.quantity
