@@ -6,16 +6,20 @@ from products.models import *
 
 class ProductListView(View): 
     def get(self, request):
-        products = Product.objects.all()
+        offset      = int(request.GET.get('offset', 0))
+        limit       = int(request.GET.get('limit', 100))
+        
+        products = Product.objects.all()[offset:limit]
+        
         result=[{ 
             "category": Category.objects.get(id=product.category_id).id,
             "name"    : product.name,
             "price"   : product.price,
             "colors"  : [{
-                    "id"   : color.id,
-                    "color": color.color.name,
-                    "image": [image.image_url for image in Image.objects.filter(product_color_id=color.id, sequence=1)][0]
-                }for color in ProductColor.objects.filter(product_id = product.id)]
+                "id"   : color.id,
+                "color": color.color.name,
+                "image": [image.image_url for image in Image.objects.filter(product_color_id=color.id, sequence=1)][0]
+            }for color in ProductColor.objects.filter(product_id = product.id)]
         }for product in products]
     
         return JsonResponse({"result":result}, status=200)
@@ -52,7 +56,7 @@ class SmartSearchView(View):
         min_price  = request.GET.get('min_price',0)
         result     = []
     
-        q = Q()
+        q &= Q(product__price__range = (min_price, max_price))
 
         if categories:
             q &= Q(product__category_id__in = categories)
@@ -62,8 +66,6 @@ class SmartSearchView(View):
                        
         if colors:
             q &= Q(color__name__in = colors)
-
-        q &= Q (product__price__range = (min_price, max_price))
 
         products = ProductColor.objects.filter(q)
 
