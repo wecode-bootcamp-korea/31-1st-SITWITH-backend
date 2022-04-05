@@ -6,37 +6,34 @@ from products.models import *
 
 class ProductListView(View): 
     def get(self, request):
-        products = Product.objects.filter()
-
+        products = Product.objects.all()
         result=[{ 
-            "category" : Category.objects.get(id=product.category_id).id,
-            "name" : product.name,
-            "price" : product.price,
-            "colors" : [{
-                    "id" : color.id,
-                    "color" : color.color.name,
-                    "image" : [image.image_url for image in Image.objects.filter(product_color_id=color.id, sequence=1)][0]
+            "category": Category.objects.get(id=product.category_id).id,
+            "name"    : product.name,
+            "price"   : product.price,
+            "colors"  : [{
+                    "id"   : color.id,
+                    "color": color.color.name,
+                    "image": [image.image_url for image in Image.objects.filter(product_color_id=color.id, sequence=1)][0]
                 }for color in ProductColor.objects.filter(product_id = product.id)]
         }for product in products]
     
         return JsonResponse({"result":result}, status=200)
 
-
 class DetailView(View): 
     def get(self, request, product_id): 
-        
-        color = request.GET.get('color', None)
+        color        = request.GET.get('color', None)
         product_data = ProductColor.objects.filter(product_id=product_id)
-        res=[]
+        res          = []
         
         if color != None:
             product_data = ProductColor.objects.filter(product_id=product_id, color_id=color)
 
         for product in product_data:
             res.append({
-                "primary_key" : product.id,
-                "color"     : product.color.name,
-                "image_list": [image.image_url for image in Image.objects.filter(product_color_id = product.color.id)]
+                "primary_key": product.id,
+                "color"      : product.color.name,
+                "image_list" : [image.image_url for image in Image.objects.filter(product_color_id = product.color.id)]
             })
         result=[{
             "name"      : product.product.name,
@@ -45,7 +42,7 @@ class DetailView(View):
         }]
         
         return JsonResponse({"result" : result}, status=200)
-        
+
 class SmartSearchView(View): 
     def get(self, request): 
         categories = request.GET.getlist('category', None)
@@ -53,13 +50,12 @@ class SmartSearchView(View):
         product    = request.GET.get('product',None)
         max_price  = request.GET.get('max_price',100000000)
         min_price  = request.GET.get('min_price',0)
-        result  =[]
+        result     = []
     
         q = Q()
 
         if categories:
             q &= Q(product__category_id__in = categories)
-
 
         if product:
             q &= Q(product__name__icontains = product)
