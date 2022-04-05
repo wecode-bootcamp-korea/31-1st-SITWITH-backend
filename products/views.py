@@ -6,22 +6,7 @@ from products.models import *
 
 class ProductListView(View): 
     def get(self, request):
-        categories = request.GET.getlist('category', None)
-        product    = request.GET.get('product',None)
-        max_price  = request.GET.get('max_price',100000000)
-        min_price  = request.GET.get('min_price',0)
-    
-        q = Q()
-
-        if categories:
-            q &= Q(category_id__in = categories)
-
-        if product:
-            q &= Q(productcolor__product__name__icontains = product)
-    
-        q &= Q (productcolor__product__price__range = (min_price, max_price))
-
-        products = Product.objects.filter(q)
+        products = Product.objects.filter()
 
         result=[{ 
             "category" : Category.objects.get(id=product.category_id).id,
@@ -35,6 +20,7 @@ class ProductListView(View):
         }for product in products]
     
         return JsonResponse({"result":result}, status=200)
+
 
 class DetailView(View): 
     def get(self, request, product_id): 
