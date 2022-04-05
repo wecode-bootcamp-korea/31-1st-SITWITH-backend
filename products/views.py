@@ -45,3 +45,39 @@ class DetailView(View):
         }]
         
         return JsonResponse({"result" : result}, status=200)
+        
+class SmartSearchView(View): 
+    def get(self, request): 
+        categories = request.GET.getlist('category', None)
+        colors     = request.GET.getlist('color',None)
+        product    = request.GET.get('product',None)
+        max_price  = request.GET.get('max_price',100000000)
+        min_price  = request.GET.get('min_price',0)
+        result  =[]
+    
+        q = Q()
+
+        if categories:
+            q &= Q(product__category_id__in = categories)
+
+
+        if product:
+            q &= Q(product__name__icontains = product)
+                       
+        if colors:
+            q &= Q(color__name__in = colors)
+
+        q &= Q (product__price__range = (min_price, max_price))
+
+        products = ProductColor.objects.filter(q)
+
+        result=[{
+            "primary_key": product.id,
+            "category"   : product.product.category.name,
+            "name"       : (product.product.name),
+            "color"      : product.color.name,
+            "price"      : product.product.price,
+            "image"      : [image.image_url for image in Image.objects.filter(product_color_id = product.id, sequence=1)]
+        }for product in products]
+     
+        return JsonResponse({"result":result}, status=200)    
