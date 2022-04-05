@@ -5,34 +5,28 @@ from django.views           import View
 from products.models import *
 
 class ProductListView(View): 
-    def get(self, request): 
-        categories=   request.GET.getlist('category', None)
-        colors     = request.GET.getlist('color',None)
+    def get(self, request):
+        categories = request.GET.getlist('category', None)
         product    = request.GET.get('product',None)
         max_price  = request.GET.get('max_price',100000000)
         min_price  = request.GET.get('min_price',0)
-        offset      = int(request.GET.get('offset', 0))
-        limit       = int(request.GET.get('limit', 16))
-
+    
         q = Q()
 
         if categories:
-            q &= Q(product__category_id__in = categories)
-        print(q)
-        if product:
-            q &= Q(product__name__icontains = product)
-                       
-        if colors:
-            q &= Q(color__name__in = colors)
+            q &= Q(category_id__in = categories)
 
-        q &= Q (product__price__range = (min_price, max_price))
-        
-        products = ProductColor.objects.filter(q)[offset:limit]
+        if product:
+            q &= Q(productcolor__product__name__icontains = product)
+    
+        q &= Q (productcolor__product__price__range = (min_price, max_price))
+
+        products = Product.objects.filter(q)
 
         result=[{ 
-            "category" : Category.objects.get(id=product.product.category_id).name,
-            "name" : product.product.name,
-            "price" : product.product.price,
+            "category" : Category.objects.get(id=product.category_id).id,
+            "name" : product.name,
+            "price" : product.price,
             "colors" : [{
                     "id" : color.id,
                     "color" : color.color.name,
