@@ -56,7 +56,7 @@ class SmartSearchView(View):
         min_price  = request.GET.get('min_price',0)
         result     = []
     
-        q &= Q(product__price__range = (min_price, max_price))
+        q = Q(product__price__range = (min_price, max_price))
 
         if categories:
             q &= Q(product__category_id__in = categories)
