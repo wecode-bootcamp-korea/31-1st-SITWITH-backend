@@ -13,8 +13,8 @@ class CartView(View):
     @login_authorization
     def post(self, request):
         try:
-            data          = json.loads(request.body)
-            user          = request.user
+            data            = json.loads(request.body)
+            user            = request.user
             productcolor_id = data['productcolor_id']
             quantity        = data['quantity']
             product_color   = ProductColor.objects.get(id = productcolor_id)
@@ -36,8 +36,7 @@ class CartView(View):
             return JsonResponse({'message' : 'Key error'}, status=400)
         except ValidationError as e:
             return JsonResponse({'message' : e.message}, status=400)
-        
-    
+
     @login_authorization
     def get(self, request):
         user      = request.user
