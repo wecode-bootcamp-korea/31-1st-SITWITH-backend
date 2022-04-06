@@ -5,23 +5,23 @@ from django.views import View
 from django.forms import ValidationError
 
 from carts.models    import Cart
-from carts.validator import validate_zero_quantity, validate_total_quantity
-from products.models import ProductColor, Image
+from carts.validator import validate_quantity, validate_total_quantity
 from cores.decorator import login_authorization
+from products.models import ProductColor, Image
 
 class CartView(View):
     @login_authorization
     def post(self, request):
         try:
-            data             = json.loads(request.body)
-            user             = request.user
-            product_id       = data['product_id']
-            color_id         = data['color_id']
-            quantity         = data['quantity']
-            product_color    = ProductColor.objects.get(product_id = product_id, color_id = color_id)
-            inventory        = product_color.inventory
+            data          = json.loads(request.body)
+            user          = request.user
+            product_id    = data['product_id']
+            color_id      = data['color_id']
+            quantity      = data['quantity']
+            product_color = ProductColor.objects.get(product_id = product_id, color_id = color_id)
+            inventory     = product_color.inventory
             
-            validate_zero_quantity(quantity)
+            validate_quantity(quantity)
             
             cart, is_created  = Cart.objects.get_or_create(
                 user          = user,
@@ -62,8 +62,8 @@ class CartView(View):
             'product_price': cart.product_color.product.price,
             'color_name'   : cart.product_color.color.name,
             'image_url'    : Image.objects.get(
-                            product_color_id = cart.product_color.id,
-                            sequence = 1).image_url
+                                product_color_id = cart.product_color.id,
+                                sequence         = 1).image_url
         } for cart in cart_data]
         
         return JsonResponse({'result' : result}, status=200)
@@ -80,7 +80,7 @@ class CartView(View):
             if not cart_id:
                 return JsonResponse({'message' : 'Url path is wrong'}, status=400)
 
-            validate_zero_quantity(quantity)
+            validate_quantity(quantity)
             
             cart.quantity = quantity
             
@@ -98,7 +98,7 @@ class CartView(View):
 
     @login_authorization
     def delete(self, request):
-        user = request.user
+        user         = request.user
         cart_id_list = request.GET.getlist('id')
         
         if not cart_id_list:
