@@ -75,11 +75,11 @@ class SmartSearchView(View):
 
         result=[{
             "primary_key"  : product.id,
-            "category"     : product.product.category.name,
+            "category_name"     : product.product.category.name,
             "product_name" : product.product.name,
             "color_name"   : product.color.name,
             "product_price": product.product.price,
-            "image"        : Image.objects.get(product_color_id = product.id, sequence=1).image_url
+            "image_url"        : Image.objects.get(product_color_id = product.id, sequence=1).image_url
         }for product in products]
      
         return JsonResponse({"result":result}, status=200)
